@@ -47,7 +47,7 @@ Office hours: Thursday 3 to 4 PM, GDC 6.436
 
 Email: sklee@cs.utexas.edu
 
-Office hours: Tuesday 3 to 4 PM, GDC 6.438D
+Office hours: Tuesday 11 AM to 12 PM, GDC 6.438D
 
 ### Learning Goals and Objectives
 
