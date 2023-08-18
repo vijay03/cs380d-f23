@@ -101,6 +101,12 @@ credit for completing an unofficial survey (before the first
 mid-term), and 0.25% for completing an official survey near the end of
 class. You will need to upload a screenshot of the completed surveys to Canvas.
 
+3. Lead class discussions. For any class where we are reading and
+discussing a research paper, you (or your team) can sign up to present
+the paper and lead the discussion. This must be done at least 1 week
+before the paper. You must create and use your own slides for the presentation.
+Worth 0.5%. Each person can only do this once in class.
+
 ### Exams
 
 There will be three in-class exams. There will not be a final exam.
