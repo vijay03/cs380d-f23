@@ -56,6 +56,10 @@ By the end of course, the student must:
 - have first-hand experience in building and testing a small distributed system
 - gain experience in either distributed-systems research or working on open-source distributed systems.
 
+### Reading Resources
+
+- [Dr. Martin Klepmann](https://martin.kleppmann.com/)'s [lectures slides](https://www.cl.cam.ac.uk/teaching/2021/ConcDisSys/dist-sys-notes.pdf) for his [Distributed Systems](https://www.cl.cam.ac.uk/teaching/2122/ConcDisSys/) course.
+
 ### Grading 
 
 **10%** Class participation <br>
