@@ -1,0 +1,21 @@
+* Introduction to class
+** Syllabus, structure, grading
+** Introduce projects and the deadlines
+** This actually took a lot of the time, about 35-40 minutes 
+** Refer to Dr. Klepmann's book for the slides and the basic content of the class
+
+* Why distributed systems?
+** Lamport's definition: "a distributed system is one where the failure of
+ a computer you didn't know existed could make your system unusable"
+** What is a distributed system? Multiple computers working together over a network to solve a problem. 
+** Many reasons: performance, availability, reliability, to solve larger problems
+
+* Talked a little bit about the history of the field
+** The theoretical side at PODS and the practical side at conferences like NSDI and SOSP
+
+
+
+* Talked about two practical examples of distributed systems having a big impact
+** Google figuring how to run massive computations on cheap hardware by developing good distributed systems
+** Amazon using the microservices model to turn internal projects into external ones, 
+helping it develop services like EC2 and make use of its under-utilized servers
