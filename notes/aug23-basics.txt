@@ -1,0 +1,42 @@
+RECAP: what are distributed systems?
+====================================
+- Lamport's definition: "a distributed system is one where the failure of
+ a computer you didn't know existed could make your system unusable"
+
+- Multiple computers working together over a network to solve a problem. 
+
+Why distributed systems?
+=========================
+- Many reasons: performance, availability, reliability, to solve larger problems
+
+Why not?
+=========
+- Much slower (why?)
+- Ensuring correctness is hard (and sometimes impossible)
+- See the COST paper (HotOS 15)
+
+Some terminology
+================
+- Latency, bandwidth, throughput, round trips
+
+
+What are some properties you would like a distributed system to have?
+============
+- Transparency
+- High performance
+- Scalability (vertical and horizontal)
+- Fault tolerance
+
+Fault models and correctness
+============================
+- Node behavior: crash-stop, crash-recovery, byzantine
+- Timing: synchronous, partially synchronous, asynchronous
+- Network: reliable, fair-loss, arbitrary
+- Errors, faults, fault tolerance, availability
+- failure detectors
+
+Example distributed system
+==========================
+- Multiple nodes
+- front-end
+- clients
