@@ -21,7 +21,7 @@ Some terminology
 
 
 What are some properties you would like a distributed system to have?
-============
+=====================================================================
 - Transparency
 - High performance
 - Scalability (vertical and horizontal)

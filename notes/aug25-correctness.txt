@@ -1,0 +1,46 @@
+RECAP: Basics and terminology
+=============================
+- What is a distributed system, why build one, why not?
+- Terms like latency, throughput, bandwidth
+- We looked at an example distributed system
+- Need to cover today: goals, fault models
+
+Correctness models
+==================
+- How to define "correct" in a distributed system?
+- Invariants on what state can be seen by readers or users
+- For example, consider a simple distributed key-value store
+- No consistency guarantees: a read can return any value
+- Read-your-own writes: If you write k=A, then read(k) = A. If somebody else wrote B, not necessary you return B
+- Session consistency: in a session (some contiguous time period), if you wrote a collection of keys K1..KN, reading them should return the values you wrote, or the values that you already saw during reads
+
+Linearizability
+================
+- distributed system behaves as if it is one single node
+- Any read should return the value of the last completed write (regardless of who completed the write)
+- Read(thread 1, X) = 1
+- Read(thread 2, X) = 1
+- Write(thread 2, X) = 2
+- Read(thread 1, X) = 2
+- Linearizability is a per-key property, doesn't say anything about other keys in the system
+- A trivial way to achieve linearizability is to shard the system such that only one node/server can read/write to a key at one time; this reduces availability
+- Linearizability rules out "stale" data being returned
+- "The last completed write" part of the definition of linearizability refers to real-time, not the happens before relationship
+- If a write overlaps in real time with a read operation, the read does not need to return the value written
+
+Eventual Consistency
+====================
+- Weak, but scalable, consistency model
+- It guarantees that an update is eventually seen by all replicas
+- Eventual consistency can be achieved using gossip protocols
+- There is no guarantee when all nodes will receive the latest update
+- There is no guarantee also on the order in which nodes will get updates
+- Consider an set_insert() operation and a set_delete() operation
+- Consider an insert followed by a delete. The correct state is that the item is deleted; but if the order is reversed, depending upon how delete is implemented, the item may be seen
+- Facebook implements eventual consistency inside their systems; their study shows that despite the lack of guarantees, updates propagate quickly and in the right order
+
+CAP Theorem
+===========
+- Due to Eric Brewer, now at Google, was a professor at Berkeley at the time
+- The theorem states that you cannot have three things simultaneously in a distributed system: consistency (linearizability), availability, and tolerance to network partitions 
+
