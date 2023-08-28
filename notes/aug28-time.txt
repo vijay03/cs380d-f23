@@ -1,0 +1,33 @@
+RECAP: Correctness and consistency
+==================================
+- Correctness: invariants in a distributed system that we would like to hold at all times
+- Consistency: what a read operation is allowed to return
+- We talked about different consistency levels, ranging from eventual consistency to linearizability
+- Linearizability is expensive to obtain, but the gold standard in consistency
+- We talked about fault models and sync/async/partially sync modes
+- We talked about the CAP theorem and what it means
+
+Skew and Network Time Protocol
+==============================
+- Computer clocks are based on quartz crystals
+- These quartz crystals drift: some clocks are faster, some clocks are slower
+- Drift is measured in parts per million: 1 ppm is about 86 ms/day, or 32s a year
+- Overall drift of quartz clocks is about 50 ppmxs
+- Due to this reason, we cannot just rely on timestamps to figure out if event A happened before event B
+- Atomic caesium-133 clocks have lower drift, but are expensive (25K USD)
+- 1 second and the UTC clock are defined using Caesium-133
+- NTP is used to synchronize clocks, all modern servers use it
+- NTP sychronizes by slewing the clock (adding a delta upto 500 ppm),
+stepping the clock (setting it to a value), or panic (too much skew)
+
+Happens-before relationship and Lamport Clocks
+==============================================
+- Lamport used causality to define the happens-before relationship, to order events in a distributed system
+- If an event A occurred before B, then L(A) < L(B). Reverse does not hold.
+- L(A) could be < L(B) for concurrent events
+- The lamport clock defines a partial order
+
+Vector clocks
+=============
+- We use vector clocks to tell whether events are concurrent
+- V(A) < V(B) iff A < B
