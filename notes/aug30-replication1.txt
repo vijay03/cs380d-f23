@@ -1,0 +1,52 @@
+RECAP: Time in distributed systems
+==================================
+- We talked about clocks and computers measure time with quartz crystals, and their clock drift
+- Talked about NTP protocol
+- Discussed happened-before relationships and the lamport clock
+- Introduced the vector clocks
+
+Replication
+===========
+- Multiple nodes in a distributed system having the same data
+- Why? For fault tolerance (data available if one node goes down), performance (serve reads and writes at tx of multiple nodes)
+- What are the challenges? How to ensure consistency between different replicas
+
+Primary-backup replication
+==========================
+- Simplest form of replication
+- All updates go to both primary and backup in synchronous fashion
+- If primary fails, back up can take over
+
+Chain replication
+=================
+- Replication scheme that gets high throughput, high availability, and strong consistency
+- Servers are allowed to ignore requests; clients resend after time-out
+- Assuming a fail-stop model
+- Reads are idempotent, writes are not
+- Replicas are arranged in a chain
+- Updates come to the head of the chain; once done, it is sent to the next replica; reply back to client once the tail has the update
+- Reads are served from the tail of the chain
+- Updates can involve non-deterministic operations; the operation is performed only once, by the head. The other replicas don't do computations, only writes.
+- High availability: since each object is on all replicas, can tolerate n-1 failures
+- Strong consistency: All updates are serialized by the tail (since it is the only one sending replies to the client)
+- High throughput: reads are quick, performed only at tail, but writes are slow
+- Failure cases:
+  - head fails: next in line becomes head. If head hadn't propagated an update, its lost, client retries
+  - tail fails: prev in line becomes tail. If tail hadn't replied to client, client retries
+  - middle fails: predecessor sends updates to successor that it had previously sent to the failed node
+- How does this compare to the primary-backup scenario?
+  - The primary has to wait until the backups reply for updates; since the primary handles all reads and writes requests, it leads to higher latency
+  - For example, the primary is blocked from answering queries until the previous update has been acked by backups
+  - Writes have higher latency in chain replication; done in parallel in primary-backup
+  - Failure handling is smoother in chain replication
+  - When the primary fails, the backups need to be told to stop processing, then a new primary selected; the primary has to send updates to all backups and get acked; only then can processing continue
+
+Reconciling replicas
+====================
+- Last writer wins. How to know who is last? Use vector timestamps
+- Preserve both writes (multi-value register)
+- Things that matter in reconciliation: semantics such as idempotence
+
+Remote Procedure Calls
+======================
+- if we have time
