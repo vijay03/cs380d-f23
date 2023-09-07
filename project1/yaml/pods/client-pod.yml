@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client-pod
+  labels:
+    role: client
+spec:
+  restartPolicy: Never
+  containers:
+  - name: client-container
+    image: sekwonlee/kvs:client
+    imagePullPolicy: Always
+    securityContext:
+      privileged: true
+    env:
+    - name: CLIENT_ID
+      value: CLIENT_ID_DUMMY
+  imagePullSecrets:
+  - name: regcred
+  nodeSelector:
+    role: general
+  hostNetwork: true

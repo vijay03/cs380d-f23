@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend-pod
+  labels:
+    role: frontend
+spec:
+  restartPolicy: Never
+  containers:
+  - name: frontend-container
+    image: sekwonlee/kvs:frontend
+    imagePullPolicy: Always
+    securityContext:
+      privileged: true
+    env:
+    - name: KVS_CLUSTER_NAME
+      value: cs380d
+  imagePullSecrets:
+  - name: regcred
+  nodeSelector:
+    role: general
+  hostNetwork: true
