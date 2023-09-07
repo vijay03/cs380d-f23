@@ -41,7 +41,7 @@ and more!
 
 Email: vijayc@utexas.edu
 
-Office hours: Thursday 3 to 4 PM, GDC 6.436
+Office hours: Tuesday 3 to 4 PM, GDC 6.436
 
 **TA: [Sekwon Lee](https://sekwonlee.github.io)**
 
