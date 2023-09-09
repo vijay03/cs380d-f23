@@ -4,7 +4,6 @@ import sys
 import tarfile
 from tempfile import TemporaryFile
 import yaml
-import time
 
 import kubernetes as k8s
 from kubernetes.stream import stream
@@ -68,9 +67,6 @@ def check_wait_pod_status(client, selector, status):
         pod_list = client.list_namespaced_pod(namespace=NAMESPACE,
                                               label_selector=selector).items
         pod_statuses = list(filter(lambda pod: pod.status.phase != status, pod_list))
-        if status == 'Terminating':
-            print(pod_statuses)
-            time.sleep(5)
         done = len(pod_statuses) == 0
 
 def get_pod_ips(client, selector, is_running=False):
