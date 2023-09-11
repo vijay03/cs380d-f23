@@ -1,0 +1,43 @@
+RECAP: Replication Part 1
+=========================
+- We talked about Chain Replication
+- We talked about Primary-Backup replication
+- We compared the two schemes and worked out an example 
+
+Today: Replication Part 2
+=========================
+- State Machine Replication
+- Quorums
+- Quorums Read Repair
+
+State Machine Replication
+=========================
+- Simple idea underlying many replicated systems
+- Problem: how to keep replicas in sync
+- Solution:
+  - Have replicas start at the start of the same initial state
+  - All replicas get the same messages in the same order
+    - This is done by using something like TCP connections which guarantees FIFO delivery of messages reliably
+  - All transitions in the same machine are deterministic
+    - Doesn't depend on factors like current time
+  - Then, all replicas will end up in the same final state
+
+Quorums
+==========
+- A very flexible scheme for maintaining consistency among replicas
+- Basic idea is this:
+  - Cluster has N replicas
+  - To perform a read, read R replicas, take the latest based on timestamps
+  - To write a write, write to W replicas
+  - For strong consistency, R + W > N
+  - For example, you can write to all N replicas (makes writes slow) but then read from any 1 replica (makes reads fast)
+- You can tune R and W based on the workload and application you are supporting
+- Good example of this is Amazon's Dynamo, which we will see later in class
+
+Quorums Read Repair
+===================
+- Client reads from N replicas
+- Gets the latest value X from a replica (based on timestamp)
+- Client then propagates X to other replicas
+- This makes reads more expensive, but propagates updates faster
+- Known as the ABD algorithm after its inventors: Attiya, Bar-Noy, Dolev

@@ -1,0 +1,54 @@
+RECAP
+=====
+- We talked about state machine replication, and why its important
+- We briefly saw chain replication
+- We talked about Project 1
+
+Bayou (SIGOPS 95)
+=================
+- Replicated, weakly consistent storage system
+- Designed for on/off network access with portable machines
+- Why study this?
+  - One of the first eventually consistent systems
+  - Uses quorums
+  - Uses gossip protocols and conflict resolution
+- Assumptions:
+  - Nodes are mobile phones or laptops
+  - Limited, intermittent connectivity
+  - Not all nodes are connected at the same time
+  - Connections are pair-wise, between two nodes (other nodes may or may not be connected)
+- Bayou is optimized for availability, simplicity, and scalability
+- Applications: meeting room scheduler, bib db
+- Consistency: session guarantees and eventual consistency
+- Bayou write: data + WriteID + dependency check + merge procedure
+  - this means that the dep check and merge proc can be different for different writes
+  - finer granularity than previous systems
+- writeID is local to each server, there is also a unique server ID
+  - writeID + server ID provides a global ordering
+- Each server contains an ordered log
+- Applications can specify conflicts and resolutions in Bayou
+- Dependency check: user supplied function and result
+  - If the result is not as expected, there is a conflict, write is not applied
+  - Similar to optimistic concurrency control
+- Bayou uses logical clocks to timestamp writes  
+- Bayou can show clients either the "committed" view or the "tentative" view
+- The Bayou database is the result of applying all received writes in order
+  - When a new write is received, it may come "previous" to an existing write
+  - In this case, the writes are re-executed
+  - A single write may be re-executed many times
+  - Once a write becomes "stable", it is not re-executed any more
+- Merge procedures have to deterministic
+  - cannot depend on system factors such as current time
+  - can only depend on db contents + data in merge proc
+  - all merge procs have uniform bounds on CPU time and memory usage
+- Write Stability
+  - a write becomes stable or committed when it is executed by its primary server
+  - this is a primary commit scheme, where one server or node is responsible for committing one record
+  - writes can be propagated and applied in tentative state, only becomes committed at primary
+  - a write at a primary is immediately committed
+- Important take-aways in Bayou
+  - The anti-entropy protocol, ensuring you don't get the same update twice
+  - How do you maintain consistency while gossiping
+  - How do you handle conflicts
+  - Total ordering and use of lamport clocks
+  - Making sure to have undo logs since rewrites can be rolled back and reapplied
