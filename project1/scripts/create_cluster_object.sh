@@ -18,7 +18,7 @@ sudo pip3 uninstall pyOpenSSL
 echo "Creating cluster object..."
 ansible-playbook -i inventory/kvs_cluster/inventory.ini --become \
     --user=${USER_NAME} --become-user=root cluster.yml \
-    --private-key=${SSH_KEY} -kK
+    --private-key=${SSH_KEY} -K
 
 echo "Finish creating cluster objects..."
 
