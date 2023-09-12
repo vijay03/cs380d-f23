@@ -7,8 +7,7 @@ USER root
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
-RUN apt-get update
-RUN apt-get install -y git
+RUN apt-get update && apt-get install -y git
 
 RUN git clone https://github.com/vijay03/cs380d-f23.git
 
