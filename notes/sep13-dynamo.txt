@@ -1,0 +1,28 @@
+RECAP
+=====
+- Bayou, a highly available replicated storage system
+- We talked about how Bayou replicates keys, and tentative and stable writes
+- We talked about how it gossips the keys, and how it avoids getting keys it has already seen
+- We talked about materializing the views, and what is on stable storage
+
+
+Dynamo
+======
+- Highly available key-value store from Amazon
+- Key ideas: quorums, versions, application-assisted conflict resolution
+- Assumptions:
+  - Provides ACID properties
+  - SLA 99.9th percentile
+- Key design points:
+  - Incremental scalability
+  - Symmetry
+  - Decentralization
+  - Heterogenity
+- Key techniques:
+  - Consistent hashing
+  - vector clocks
+  - sloppy quorum, hinted handoff
+  - anti-entropy using merkle trees
+  - gossip-based membership
+
+  
