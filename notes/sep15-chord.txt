@@ -1,0 +1,47 @@
+Recap
+=====
+- Dynamo
+- Discussed the basic ideas, quorums, hinted handoff, consistent hashing, virtual nodes
+- Talked about the business setting in which Dynamo operates
+
+Chord
+=====
+- Distributed lookup protocol
+- Given a key, it returns a node
+- Efficiently adapts as nodes join and leave the system
+- Continues to answer queries accurately in the face of churn
+- Communication state and amount of state scale logarithmically with number of nodes
+- Chord uses consistent hashing, but:
+  - each node does not need to know about all other nodes
+  - each node maintains info about O(logN) nodes
+  - when some of the O(logN) nodes are not present, perf degrades gracefully
+- Chord provides:
+  - load balancing
+  - decentralization
+  - scalability
+  - availability
+  - flexibility (works with any key space)
+- Main diff of Chord with Consistent Hashing:
+  - each node only needs to know about a few other nodes, vs all other nodes
+  - this reduces the state at each node, and actions req when a node is added or removed
+- Easy way to think about the problem:
+  - We want to find a node in O(n) space
+  - Brute force approach: just go one by one until we find it. Uses O(n) messages
+  - Better approach: use binary search
+    - Nodes maintain the "Finger table"
+    - It contains the id of successor of (n + 2^{k-1}) % (2^m) for various k, node is n
+    - first finger, n.finger[0] = successor of n
+- Algorithm:
+   - find the entry in the finger table that precedes the ID (e.g., node 51 preceding ID 54)
+   - invoke find successor on that node
+   - this will recursively cause more lookups
+   - Similar to binary search, each lookup halves the space we need to search to find the sucessor
+- In the face of churn, Chord runs a stabilization protocol
+  - this ensures successor pointers are correct
+- When a node n joins between np and ns
+  - n finds ns as its successor
+  - ns keeps n as predecessor
+  - np runs stabilize, finds n is its successor
+  - np tells n, and n keeps np as its predecessor
+- Chord also maintains a list of successors at each node
+
