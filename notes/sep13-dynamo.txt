@@ -24,5 +24,11 @@ Dynamo
   - sloppy quorum, hinted handoff
   - anti-entropy using merkle trees
   - gossip-based membership
-
+- Consistent Hashing
+  - Used to distribute keys to nodes
+  - Hashes keys and nodes to points on a ring
+  - Key is handled by first node clockwise on the ring
+  - Dynamo creates multiple virtual nodes for each physical node
+  - Virtual nodes are placed on the ring
+  - This distributed load more, and accounts of different physical node capacities
   
