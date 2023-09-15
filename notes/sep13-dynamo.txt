@@ -31,4 +31,10 @@ Dynamo
   - Dynamo creates multiple virtual nodes for each physical node
   - Virtual nodes are placed on the ring
   - This distributed load more, and accounts of different physical node capacities
-  
+- Vector clocks
+  - All writes include vector clock information for conflict detection
+- Quorums in Dynamo
+  - Dynamo reads N replicas, return fastest R results
+  - Dynamo writes to W replicas, the W successors on the ring
+    - the W replicas are *not* chosen randomly
+  - Dynamo does hinted handoff, if any of the W successors are down, Dynamo writes to next node on the ring and leaves a hint
