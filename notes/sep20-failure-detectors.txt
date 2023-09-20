@@ -1,0 +1,48 @@
+RECAP
+=====
+- We talked about Chord, consistent hashing, and the main insight behind Chord
+
+Failure Detectors
+=================
+- What is a failure detector? An entity in a distributed system that determines when a node has failed.
+- Reliable failure detector: always says alive nodes are alive, and dead nodes as dead
+- Unreliable failure detector: sometimes says alive nodes are dead, and vice versa
+- The question: can we build reliable distributed systems using unreliable failure detectors?
+- Turns out we can!
+- In an asynchronous model, achieving Consensus and Atomic Broadcast are impossible
+  - But are possible if we add unreliable failure detectors into the mix
+- Failure detector properties:
+  - Completeness: a failure detector must mark as failed all failed nodes eventually
+  - Accuracy: a failure detector doesn't mark alive nodes as dead
+- Weakest useful failure detector:
+  - After time T1, all failed nodes are marked as dead
+  - After time T2, all alive nodes are marked alive 
+  - A distributed application built on top of this has safety, but may not have liveness
+- Completeness variants:
+  - Strong completeness: every failure detector marks every crashed node as failed
+  - Weak completeness: some failure detector marks every crashed node as failed
+- Accuracy variants:
+  - Strong accuracy: no nodes are incorrectly marked as failed
+  - Weak accuracy: some nodes are never incorrectly marked as failed
+- Practically, we want some T after which weak accuracy holds (eventual weak accuracy)
+- Perfect failure detector: strong completeness + strong accuracy
+
+Practical failure detection
+===========================
+- What is a simple way to detect failure?
+  - Send a node a message
+  - If it doesn't reply in time T, mark node has failed
+- Problem with this approach: how to determine T
+  - T too low: alive nodes marked as dead, distributed system does un-necessary protocols
+  - T too high: whole system waiting to proceed after a node has died
+- T is set experimentally today, and this approach is used in most distributed systems
+- Node X sends message to node Y with timeout T, no reply in T, marks Y as failed
+  - if Y later replies, X increases T, but only for Y
+- This failure detector has the properties of the weakest useful failure detector  
+
+RAPID
+=====
+- Distributed membership service
+- Provides "stable" failure detection: membership doesn't oscillate in the face of failures
+- Uses an expander-based monitoring edge overlay
+- Uses a multi-process cut detection
