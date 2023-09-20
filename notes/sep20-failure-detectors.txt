@@ -46,3 +46,5 @@ RAPID
 - Provides "stable" failure detection: membership doesn't oscillate in the face of failures
 - Uses an expander-based monitoring edge overlay
 - Uses a multi-process cut detection
+- Every process p is monitored by K observer processes
+- If L of K report failure, p is considered failed
