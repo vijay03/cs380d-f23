@@ -1,0 +1,33 @@
+RECAP
+=====
+- Failure detectors: why, how
+- Classes of failure detectors
+- RAPID failure detector
+
+Broadcast
+=========
+- Message from one node to all others in the system
+- Broadcast consists of physical sending and receiving, and a "delivery"
+- Types of broadcast: FIFO, Causal, Total Order
+- Relationship between broadcast models: Best Effort, Reliable, FIFO, Causal, Total Order, FIFO-Total-Order
+- Broadcast algorithm:
+  - Send messages out pair-wise
+  - Deliver messages based on the order we want
+- Eager reliable broadcast: all nodes forward messages to all other nodes
+  - not efficient
+- Gossip protocols also achieve similar goal with higher efficiency
+  - No guarantee that all nodes
+- We build other algos on top of reliable broadcast
+- FIFO Broadcast:
+  - Each node uses a seq number, starting at 0
+  - Each node keeps track of seq number of messages it delivered from each node
+  - It only delivers a message N if it has delivered N-1 from that node
+- Causal Broadcast:
+  - Similar to FIFO Broadcast, using vectors instead of seq numbers
+  - A node delivers a message Y only if its vector timestamp is later than the previous message X delivered
+  - Note that Causal Broadcast is "global" while FIFO is "local"
+- Total Order Broadcast
+  - Single leader approach, all nodes send messages to leader, who serializes and broadcasts with FIFO broadcast
+  - Has problem with leader dying or changing leader
+  - Decentralized approach: attach vector clocks to all messages, deliver a message if every node has seen previous messages
+
