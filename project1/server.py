@@ -6,24 +6,30 @@ serverId = 0
 basePort = 9000
 
 class KVSRPCServer:
+    KVStore = dict()
     # TODO: You need to implement details for these functions.
 
     ## put: Insert a new-key-value pair or updates an existing
     ## one with new one if the same key already exists.
     def put(self, key, value):
-        return "[Server " + str(serverId) + "] Receive a put request: " + "Key = " + str(key) + ", Val = " + str(value)
+        print("[Server " + str(serverId) + "] Receive a put request: " + "Key = " + str(key) + ", Val = " + str(value))
+        self.KVStore[key] = value
+        #return "[Server " + str(serverId) + "] Receive a put request: " + "Key = " + str(key) + ", Val = " + str(value)
 
     ## get: Get the value associated with the given key.
     def get(self, key):
-        return "[Server " + str(serverId) + "] Receive a get request: " + "Key = " + str(key)
+        print("[Server " + str(serverId) + "] Receive a get request: " + "Key = " + str(key))
+        return self.KVStore[key]
 
     ## printKVPairs: Print all the key-value pairs at this server.
     def printKVPairs(self):
-        return "[Server " + str(serverId) + "] Receive a request printing all KV pairs stored in this server"
+        print("[Server " + str(serverId) + "] Receive a request printing all KV pairs stored in this server")
+        return self.KVStore.items()
 
     ## shutdownServer: Terminate the server itself normally.
     def shutdownServer(self):
-        return "[Server " + str(serverId) + "] Receive a request for a normal shutdown"
+        print("[Server " + str(serverId) + "] Receive a request for a normal shutdown")
+        
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = '''To be added.''')
