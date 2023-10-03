@@ -20,8 +20,8 @@ class FrontendRPCServer:
     alive_servers = {}
 
     def put(self, key, value):
-        for server, xmlrpc_server in self.alive_servers.items():
-            xmlrpc_server.put(key, value)
+        for serverId, rpcHandle in self.alive_servers.items():
+            rpcHandle.put(key, value)
         print('Done')
     
     ## get: This function routes requests from clients to proper
@@ -42,11 +42,10 @@ class FrontendRPCServer:
     def printKVPairs(self, serverId):
         '''
         Please make it printed like below (newline separated).
+        Key1:Val1
+        Key2:Val2
 
-Key1:Val1
-Key2:Val2
-
-Key3:Val3
+        Key3:Val3
         '''
 
         ans = self.alive_servers[serverId].printKVPairs()
@@ -63,7 +62,10 @@ Key3:Val3
     ## listServer: This function prints out a list of servers that
     ## are currently active/alive inside the cluster.
     def listServer(self):
-        return self.alive_servers.keys()
+        serverList = []
+        for serverId, rpcHandle in self.alive_servers.items():
+            serverList.append(serverId)
+        return serverList
 
     ## shutdownServer: This function routes the shutdown request to
     ## a server matched with the specified serverId to let the corresponding
@@ -77,3 +79,6 @@ server = SimpleThreadedXMLRPCServer(("localhost", 8001))
 server.register_instance(FrontendRPCServer())
 
 server.serve_forever()
+
+
+# counter in frontend
