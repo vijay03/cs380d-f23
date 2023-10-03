@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 
-MAINTAINER Sekwon Lee <sklee@cs.utexas.edu> version: 0.1
+MAINTAINER Sekwon Lee <stalati@utexas.edu> version: 0.1
 
 USER root
 

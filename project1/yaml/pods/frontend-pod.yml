@@ -8,7 +8,7 @@ spec:
   restartPolicy: Never
   containers:
   - name: frontend-container
-    image: sekwonlee/kvs:frontend
+    image: stalati/distributed-project1:frontend
     imagePullPolicy: Always
     securityContext:
       privileged: true
