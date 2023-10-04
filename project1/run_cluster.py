@@ -106,6 +106,7 @@ def event_trigger(k8s_client, k8s_apps_client, prefix):
     while terminate != True:
         cmd = input("Enter a command: ")
         args = cmd.split(':')
+        print(str(args))
 
         if args[0] == 'addClient':
             addClient(k8s_client, k8s_apps_client, prefix)

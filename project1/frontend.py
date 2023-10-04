@@ -3,6 +3,7 @@ import xmlrpc.server
 from socketserver import ThreadingMixIn
 from xmlrpc.server import SimpleXMLRPCServer
 import random
+import concurrent.futures
 
 kvsServers = dict()
 baseAddr = "http://localhost:"
@@ -23,21 +24,36 @@ class FrontendRPCServer:
         for serverId, rpcHandle in self.alive_servers.items():
             rpcHandle.put(key, value)
         #print('Done')
-        return 'Done'
+        return 'Done-Really!'
     
+    def get_local(self, key):
     ## get: This function routes requests from clients to proper
     ## servers that are responsible for getting the value
     ## associated with the given key.
+        random_server_id = random.choice(list(self.alive_servers.keys()))
+        # print("Random server ID: " + str(random_server_id))
+        # print("Random server id object: " + self.alive_servers[random_server_id])
+        value = self.alive_servers[random_server_id].get(key)
+        return value
+
     def get(self, key):
+        # with concurrent.futures.ThreadPoolExecutor(max_workers = 16) as executor:
+        #     future = executor.submit(self.get_local, (key))
+        #     for future in concurrent.futures.as_completed(futures):
+        #         result = future.result()
+        #         r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
+        #         yield r
         random_server_id = random.choice(list(self.alive_servers.keys()))
         # print("Random server ID: " + str(random_server_id))
         # print("Random server id object: " + self.alive_servers[random_server_id])
         value = self.alive_servers[random_server_id].get(key)
         # print("Value read:" + str(value))
         r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(value)
+        return r
+        
         # GRPC call to random server for read
         # serverId = key % len(kvsServers)
-        return r
+        
 
     ## printKVPairs: This function routes requests to servers
     ## matched with the given serverIds.
