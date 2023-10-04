@@ -78,6 +78,7 @@ def put(key, value):
 def get(key):
     print('Request for key: {key}')
     result = clientList[random.randint(1, len(clientList)) % len(clientList)].get(key)
+    print('Request for key later: {key}')
     print(result)
 
 def printKVPairs(serverId):
@@ -129,9 +130,12 @@ def event_trigger(k8s_client, k8s_apps_client, prefix):
                     key = int(args[i + 1])
                     keys.append(key)
             # key = int(args[1])
+            print(str(keys))
             with concurrent.futures.ThreadPoolExecutor(len(keys)) as executor:
                 # Submit GET requests for each key concurrently
+                print("Inside")
                 results = list(executor.map(get, keys))
+                print("Done res")
             # get(key)
         elif args[0] == 'printKVPairs':
             serverId = int(args[1])
