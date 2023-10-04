@@ -23,6 +23,7 @@ class FrontendRPCServer:
         for serverId, rpcHandle in self.alive_servers.items():
             rpcHandle.put(key, value)
         print('Done')
+        return 'Done'
     
     ## get: This function routes requests from clients to proper
     ## servers that are responsible for getting the value
