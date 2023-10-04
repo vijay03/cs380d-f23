@@ -122,8 +122,16 @@ def event_trigger(k8s_client, k8s_apps_client, prefix):
             value = int(args[2])
             put(key, value)
         elif args[0] == 'get':
-            key = int(args[1])
-            get(key)
+            keys = []
+            for i in range(len(args)):
+                if(args[i] == 'get'):
+                    key = int(args[i + 1])
+                    keys.append(key)
+            # key = int(args[1])
+            with concurrent.futures.ThreadPoolExecutor(len(keys)) as executor:
+                # Submit GET requests for each key concurrently
+                results = list(executor.map(get, [keys]))
+            # get(key)
         elif args[0] == 'printKVPairs':
             serverId = int(args[1])
             printKVPairs(serverId)
