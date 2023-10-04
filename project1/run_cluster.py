@@ -6,7 +6,7 @@ import random
 import xmlrpc.client
 
 from shared import util
-
+import concurrent.futures
 baseAddr = "http://localhost:"
 baseClientPort = 7000
 baseFrontendPort = 8001
@@ -76,6 +76,7 @@ def put(key, value):
     print(result)
 
 def get(key):
+    print('Request for key: {key}')
     result = clientList[random.randint(1, len(clientList)) % len(clientList)].get(key)
     print(result)
 
@@ -130,7 +131,7 @@ def event_trigger(k8s_client, k8s_apps_client, prefix):
             # key = int(args[1])
             with concurrent.futures.ThreadPoolExecutor(len(keys)) as executor:
                 # Submit GET requests for each key concurrently
-                results = list(executor.map(get, [keys]))
+                results = list(executor.map(get, keys))
             # get(key)
         elif args[0] == 'printKVPairs':
             serverId = int(args[1])
