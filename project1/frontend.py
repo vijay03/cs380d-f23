@@ -22,7 +22,7 @@ class FrontendRPCServer:
     def put(self, key, value):
         for serverId, rpcHandle in self.alive_servers.items():
             rpcHandle.put(key, value)
-        print('Done')
+        #print('Done')
         return 'Done'
     
     ## get: This function routes requests from clients to proper
@@ -30,13 +30,14 @@ class FrontendRPCServer:
     ## associated with the given key.
     def get(self, key):
         random_server_id = random.choice(list(self.alive_servers.keys()))
-        print("Random server ID: " + str(random_server_id))
+        # print("Random server ID: " + str(random_server_id))
         # print("Random server id object: " + self.alive_servers[random_server_id])
         value = self.alive_servers[random_server_id].get(key)
-        print("Value read:" + str(value))
+        # print("Value read:" + str(value))
+        r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(value)
         # GRPC call to random server for read
         # serverId = key % len(kvsServers)
-        return value
+        return r
 
     ## printKVPairs: This function routes requests to servers
     ## matched with the given serverIds.
@@ -50,7 +51,7 @@ class FrontendRPCServer:
         '''
 
         ans = self.alive_servers[serverId].printKVPairs()
-        print(ans)
+        #print(ans)
         return ans
         #return kvsServers[serverId].printKVPairs()
 
