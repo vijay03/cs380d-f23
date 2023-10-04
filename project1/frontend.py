@@ -30,10 +30,10 @@ class FrontendRPCServer:
     ## associated with the given key.
     def get(self, key):
         random_server_id = random.choice(list(self.alive_servers.keys()))
-        print("Random server ID: " + random_server_id)
-        print("Random server id object: " + self.alive_servers[random_server_id])
+        print("Random server ID: " + str(random_server_id))
+        # print("Random server id object: " + self.alive_servers[random_server_id])
         value = self.alive_servers[random_server_id].get(key)
-        print("Value read:" + value)
+        print("Value read:" + str(value))
         # GRPC call to random server for read
         # serverId = key % len(kvsServers)
         return value
