@@ -132,11 +132,17 @@ def event_trigger(k8s_client, k8s_apps_client, prefix):
                     keys.append(key)
             # key = int(args[1])
             print(str(keys))
-            with concurrent.futures.ThreadPoolExecutor(len(keys)) as executor:
-                # Submit GET requests for each key concurrently
-                print("Inside")
-                results = list(executor.map(get, keys))
-                print("Done res")
+            try:
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    # Submit GET requests for each key concurrently
+                    print("Inside")
+                    results = list(executor.map(get, keys))
+                    # for future in concurrent.futures.as_completed(results):
+                    #     print(results)
+                    print("Done res")
+            except Exception as e:
+                print("In error")
+                print(str(e))
             # get(key)
         elif args[0] == 'printKVPairs':
             serverId = int(args[1])
