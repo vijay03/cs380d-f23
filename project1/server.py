@@ -1,6 +1,7 @@
 import argparse
 import xmlrpc.client
 import xmlrpc.server
+import concurrent.futures
 
 serverId = 0
 basePort = 9000
@@ -16,10 +17,19 @@ class KVSRPCServer:
         self.KVStore[key] = value
         return "[Server " + str(serverId) + "] Receive a put request: " + "Key = " + str(key) + ", Val = " + str(value)
 
+    def get_local(self, key):
+        return self.KVStore[key]
+
     ## get: Get the value associated with the given key.
     def get(self, key):
-        print("[Server " + str(serverId) + "] Receive a get request: " + "Key = " + str(key))
-        return self.KVStore[key]
+        with concurrent.futures.ThreadPoolExecutor(max_workers = 16) as executor:
+            future = executor.submit(self.get_local, (key))
+            for future in concurrent.futures.as_completed(futures):
+                result = future.result()
+                # r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
+                return str(result)
+        # print("[Server " + str(serverId) + "] Receive a get request: " + "Key = " + str(key))
+        # return self.KVStore[key]
 
     ## printKVPairs: Print all the key-value pairs at this server.
     def printKVPairs(self):
@@ -30,7 +40,7 @@ class KVSRPCServer:
     ## shutdownServer: Terminate the server itself normally.
     def shutdownServer(self):
         return "[Server " + str(serverId) + "] Receive a request for a normal shutdown"
-    
+
     def heartBeat(self):
         print("[Server " + str(serverId) + "] is running ..")
         return "OK"
