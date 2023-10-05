@@ -37,19 +37,19 @@ class FrontendRPCServer:
         return value
 
     def get(self, key):
-        # with concurrent.futures.ThreadPoolExecutor(max_workers = 16) as executor:
-        #     future = executor.submit(self.get_local, (key))
-        #     for future in concurrent.futures.as_completed(futures):
-        #         result = future.result()
-        #         r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
-        #         yield r
-        random_server_id = random.choice(list(self.alive_servers.keys()))
+        with concurrent.futures.ThreadPoolExecutor(max_workers = 16) as executor:
+            future = executor.submit(self.get_local, (key))
+            for future in concurrent.futures.as_completed(futures):
+                result = future.result()
+                r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
+                return r
+        # random_server_id = random.choice(list(self.alive_servers.keys()))
         # print("Random server ID: " + str(random_server_id))
         # print("Random server id object: " + self.alive_servers[random_server_id])
-        value = self.alive_servers[random_server_id].get(key)
+        # value = self.alive_servers[random_server_id].get(key)
         # print("Value read:" + str(value))
-        r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(value)
-        return r
+        # r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(value)
+        # return r
         
         # GRPC call to random server for read
         # serverId = key % len(kvsServers)
