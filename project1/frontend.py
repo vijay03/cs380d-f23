@@ -100,6 +100,7 @@ class FrontendRPCServer:
                 self.alive_servers.put(serverId, rpcHandle)
             else :
                 self.dead_servers.put(serverId, rpcHandle)
+                self.alive_servers.pop(serverId)
         if len(self.dead_servers) != 0:
             print("There are " + str(len(self.dead_servers)) + "dead servers.")
         return "There are " + str(len(self.alive_servers)) + "alive servers."
