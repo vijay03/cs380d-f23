@@ -4,7 +4,7 @@ import subprocess
 
 import random
 import xmlrpc.client
-
+import traceback
 from shared import util
 import concurrent.futures
 baseAddr = "http://localhost:"
@@ -136,13 +136,17 @@ def event_trigger(k8s_client, k8s_apps_client, prefix):
                 with concurrent.futures.ThreadPoolExecutor() as executor:
                     # Submit GET requests for each key concurrently
                     print("Inside")
-                    results = list(executor.map(get, keys))
+                    # results = list(executor.map(get, keys))
+                    results = [executor.submit(get, (key)) for key in keys] 
                     # for future in concurrent.futures.as_completed(results):
                     #     print(results)
                     print("Done res")
+                    # for r in results:
+                    #     print(r)
+                concurrent.futures.wait(results)
             except Exception as e:
                 print("In error")
-                print(str(e))
+                traceback.print_exc()
             # get(key)
         elif args[0] == 'printKVPairs':
             serverId = int(args[1])
