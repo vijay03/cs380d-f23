@@ -1,16 +1,11 @@
 import argparse
 import xmlrpc.client
 import xmlrpc.server
-import SocketServer
-from SimpleXMLRPCServer import SimpleXMLRPCServer
-from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 
 clientId = 0
 basePort = 7000
 
 frontend = xmlrpc.client.ServerProxy("http://localhost:8001")
-
-class AsyncXMLRPCServer(SocketServer.ThreadingMixIn,SimpleXMLRPCServer): pass
 
 class ClientRPCServer:
     def put(self, key, value):
@@ -29,9 +24,7 @@ if __name__ == '__main__':
 
     clientId = args.clientId[0]
 
-    # server = xmlrpc.server.SimpleXMLRPCServer(("localhost", basePort + clientId))
-    server = AsyncXMLRPCServer(("localhost", basePort + clientId), SimpleXMLRPCRequestHandler)
-
+    server = xmlrpc.server.SimpleXMLRPCServer(("localhost", basePort + clientId))
     server.register_instance(ClientRPCServer())
 
     server.serve_forever()
