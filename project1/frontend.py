@@ -49,8 +49,11 @@ class FrontendRPCServer:
                 result = future.result()
                 r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
                 res.append(r)
-                #yield r + "[DONE]"
-            return str(res)
+            #     #yield r + "[DONE]"
+            # return str(res)
+        concurrent.futures.wait(responses, return_when=concurrent.futures.ALL_COMPLETED)
+        return res
+
 
         
         # GRPC call to random server for read
@@ -68,7 +71,7 @@ class FrontendRPCServer:
         Key3:Val3
         '''
 
-        ans = self.alive_servers[serverId].printKVPairs()
+        ans = alive_servers[serverId].printKVPairs()
         #print(ans)
         return ans
         #return kvsServers[serverId].printKVPairs()
@@ -83,7 +86,7 @@ class FrontendRPCServer:
     ## are currently active/alive inside the cluster.
     def listServer(self):
         serverList = []
-        for serverId, rpcHandle in self.alive_servers.items():
+        for serverId, rpcHandle in alive_servers.items():
             serverList.append(serverId)
         return serverList
 
