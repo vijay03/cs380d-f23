@@ -30,6 +30,10 @@ class KVSRPCServer:
     ## shutdownServer: Terminate the server itself normally.
     def shutdownServer(self):
         return "[Server " + str(serverId) + "] Receive a request for a normal shutdown"
+    
+    def heartBeat(self):
+        print("[Server " + str(serverId) + "] is running ..")
+        return "OK"
 
 
 if __name__ == '__main__':

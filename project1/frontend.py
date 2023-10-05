@@ -19,6 +19,7 @@ class FrontendRPCServer:
     ## servers that are responsible for inserting a new key-value
     ## pair or updating an existing one.
     alive_servers = {}
+    dead_servers = {}
 
     def put(self, key, value):
         for serverId, rpcHandle in self.alive_servers.items():
@@ -92,6 +93,16 @@ class FrontendRPCServer:
         result = self.alive_servers[serverId].shutdownServer()
         self.alive_servers.pop(serverId)
         return result
+    
+    def heartBeat(self):
+        for serverId, rpcHandle in kvsServers.items():
+            if kvsServers[serverId].heartBeat() == "OK":
+                self.alive_servers.put(serverId, rpcHandle)
+            else :
+                self.dead_servers.put(serverId, rpcHandle)
+        if len(self.dead_servers) != 0:
+            print("There are " + str(len(self.dead_servers)) + "dead servers.")
+        return "There are " + str(len(self.alive_servers)) + "alive servers."
 
 server = SimpleThreadedXMLRPCServer(("localhost", 8001))
 server.register_instance(FrontendRPCServer())
