@@ -24,10 +24,13 @@ class KVSRPCServer:
     def get(self, key):
         with concurrent.futures.ThreadPoolExecutor(max_workers = 16) as executor:
             future = executor.submit(self.get_local, (key))
+            res = []
             for future in concurrent.futures.as_completed(futures):
                 result = future.result()
-                # r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
-                yield str(result)
+                r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
+                # yield str(result)
+                res.append(r)
+            return res
         # print("[Server " + str(serverId) + "] Receive a get request: " + "Key = " + str(key))
         # return self.KVStore[key]
 

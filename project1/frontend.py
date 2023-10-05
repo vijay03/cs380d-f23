@@ -44,10 +44,14 @@ class FrontendRPCServer:
     def get(self, key):
         with concurrent.futures.ThreadPoolExecutor(max_workers = 16) as executor:
             future = executor.submit(self.get_local, (key))
+            res = []
             for future in concurrent.futures.as_completed(futures):
                 result = future.result()
                 r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
-                yield r + "[DONE]"
+                res.append(r)
+                #yield r + "[DONE]"
+            return str(res)
+
         
         # GRPC call to random server for read
         # serverId = key % len(kvsServers)
