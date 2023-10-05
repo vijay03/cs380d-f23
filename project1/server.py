@@ -27,7 +27,7 @@ class KVSRPCServer:
             for future in concurrent.futures.as_completed(futures):
                 result = future.result()
                 # r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
-                return str(result)
+                yield str(result)
         # print("[Server " + str(serverId) + "] Receive a get request: " + "Key = " + str(key))
         # return self.KVStore[key]
 
