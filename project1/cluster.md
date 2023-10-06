@@ -101,11 +101,11 @@ Creating a frontend pod...
 Creating server pods...
 Creating client pods...
 Enter a command: listServer
-[0, 1]
+0, 1
 Enter a command: addClient
 Enter a command: addServer
 Enter a command: listServer
-[0, 1, 2]
+0, 1, 2
 Enter a command: put:1:1
 [Server 1] Receive a put request: Key = 1, Val = 1
 Enter a command: put:2:2
@@ -117,10 +117,10 @@ Enter a command: get:2
 Enter a command: shutdownServer:0
 [Server 0] Receive a request for a normal shutdown
 Enter a command: listServer
-[1, 2]
+1, 2
 Enter a command: killServer:1
 Enter a command: listServer
-[2]
+2
 Enter a command: terminate
 ```
 
@@ -143,4 +143,32 @@ that exist in the cluster.
 
 ```
 $ bash scripts/delete_pods.sh
+```
+
+## Test KVS
+We have a `testKVS` command to test our KVS implementation.
+This command receives the following arguments.
+
+1. num_keys: total number of keys to be inserted and tested.
+2. num_threads: total number of concurrent threads sending requests.
+3. num_requests: total number of requests to be sent to the KVS.
+4. put_ratio (0 - 100): ratio of put requests among all requests.
+5. test_consistency (0 or 1): 0 disables the consistency check, 1 enables it.
+If it is disabled, we simply test put/get operations and the following 
+arguments (`crash_server`, `add_server`, `remove_server`) will be ignored.
+6. crash_server (0 or 1): check consistency while a server crash undergoes (0: disable, 1: enable).
+7. add_server (0 or 1): check consistency while a new server addition undergoes (0: disable, 1: enable).
+8. remove_server (0 or 1): check consistency while a server removal undergoes (0: disable, 1: enable).
+
+```
+$ python run_cluster.py -c 1 -s 2
+Creating a frontend pod...
+Creating server pods...
+Creating client pods...
+Enter a command: testKVS:1000:4:1000:0:0:0:0:0
+[Warning] Clients should exist more than # of threads
+[Warning] Add 3 more clients
+Load throughput = 70.4ops/sec
+Run throughput = 233.3ops/sec
+Enter a command:
 ```
