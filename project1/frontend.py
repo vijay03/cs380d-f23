@@ -46,7 +46,7 @@ class FrontendRPCServer:
         for r in res:
             res_result.append(str(r.result()))
         result = "\n".join(res_result)
-        return result
+        return result + "Doneee"
 
     ## get: This function routes requests from clients to proper
     ## servers that are responsible for getting the value
@@ -55,9 +55,9 @@ class FrontendRPCServer:
         result = ""
         if key in self.locked_keys:
             time.sleep(0.1)
-        # random_server_id = random.choice(list(self.alive_servers.keys()))
-        serverId = key % len(self.alive_servers)
-        return self.alive_servers[serverId].get(key)
+        random_server_id = random.choice(list(self.alive_servers.keys()))
+        # serverId = key % len(self.alive_servers)
+        return self.alive_servers[random_server_id].get(key)
 
     ## printKVPairs: This function routes requests to servers
     ## matched with the given serverIds.
@@ -127,10 +127,10 @@ class FrontendRPCServer:
                     except:
                         count += 1
                 if not alive:
-                    dead_servers.append(serverId)
+                    self.alive_servers.pop(serverId)
         
-            for id in dead_servers:
-                self.alive_servers.pop(serverId)
+            # for id in dead_servers:
+            #     self.alive_servers.pop(serverId)
     
 
 server = SimpleThreadedXMLRPCServer(("localhost", 8001))

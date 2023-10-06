@@ -17,26 +17,27 @@ class KVSRPCServer:
     def put(self, key, value):
         # print("[Server " + str(serverId) + "] Receive a put request: " + "Key = " + str(key) + ", Val = " + str(value))
         self.KVStore[key] = value
-        return "[Server " + str(serverId) + "] Receive a put request: " + "Key = " + str(key) + ", Val = " + str(value)
+        return "[Server " + str(serverId) + "] Receive a put request: " + "Key = " + str(key) + ", Val = " + str(value) + "Doneee"
 
     def get_local(self, key):
         return self.KVStore[key]
 
     ## get: Get the value associated with the given key.
     def get(self, key):
-        with concurrent.futures.ThreadPoolExecutor(max_workers = 16) as executor:
-            future = executor.submit(self.get_local, (key))
-            res = []
-            for future in concurrent.futures.as_completed(futures):
-                result = future.result()
-                r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
-                # yield str(result)
-                res.append(result)
-            # return res
-        concurrent.futures.wait(res, return_when=concurrent.futures.ALL_COMPLETED)
-        return res
+        # with concurrent.futures.ThreadPoolExecutor(max_workers = 16) as executor:
+        #     future = executor.submit(self.get_local, (key))
+        #     res = []
+        #     for future in concurrent.futures.as_completed(futures):
+        #         result = future.result()
+        #         r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
+        #         # yield str(result)
+        #         res.append(result)
+        #     # return res
+        # concurrent.futures.wait(res, return_when=concurrent.futures.ALL_COMPLETED)
+        # return res
         # print("[Server " + str(serverId) + "] Receive a get request: " + "Key = " + str(key))
-        # return self.KVStore[key]
+        r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(self.KVStore[key])
+        return r
 
     ## printKVPairs: Print all the key-value pairs at this server.
     def printKVPairs(self):
