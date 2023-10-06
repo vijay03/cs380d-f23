@@ -152,7 +152,7 @@ This command receives the following arguments.
 1. num_keys: total number of keys to be inserted and tested.
 2. num_threads: total number of concurrent threads sending requests.
 3. num_requests: total number of requests to be sent to the KVS.
-4. put_ratio: ratio of put requests among all requests.
+4. put_ratio (0 - 100): ratio of put requests among all requests.
 5. test_consistency (0 or 1): 0 disables the consistency check, 1 enables it.
 If it is disabled, we simply test put/get operations and the following 
 arguments (`crash_server`, `add_server`, `remove_server`) will be ignored.
