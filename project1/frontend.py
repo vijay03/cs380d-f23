@@ -2,107 +2,88 @@ import xmlrpc.client
 import xmlrpc.server
 from socketserver import ThreadingMixIn
 from xmlrpc.server import SimpleXMLRPCServer
-import random
-import concurrent.futures
-import threading
-import time
 from concurrent.futures import ThreadPoolExecutor
-from threading import Lock
-from collections import defaultdict
 
-kvsServers = dict()
+from collections import defaultdict
+import concurrent.futures
+from threading import Lock
+
+import time
+import random
+import threading
+
 baseAddr = "http://localhost:"
 baseServerPort = 9000
-# alive_servers = dict()
-# dead_servers = dict()
 
 class SimpleThreadedXMLRPCServer(ThreadingMixIn, SimpleXMLRPCServer):
         pass
 
 class FrontendRPCServer:
     # TODO: You need to implement details for these functions.
-
+    def __init__(self):
+        self.locked_keys = dict()
+        self.alive_servers  = dict()
+        self.dead_servers = dict()
+        self.backgroung_thread_for_heartbeat = threading.Thread(target=self.hearbeat)
+        self.backgroung_thread_for_heartbeat.daemon = True
+        self.backgroung_thread_for_heartbeat.start()
+                
     ## put: This function routes requests from clients to proper
     ## servers that are responsible for inserting a new key-value
     ## pair or updating an existing one.
-    # alive_servers = {}
-    # dead_servers = {}
-    def __init__(self):
-        self.alive_servers = dict()
-        self.dead_servers = dict()
-        # self.multi_thread_for_get = ThreadPoolExecutor(16)
-        # self.multi_thread_for_put = ThreadPoolExecutor(16)
-        self.thread_for_heartbeat = threading.Thread(target=self.heartBeat)
-        self.thread_for_heartbeat.daemon = True
-        self.thread_for_heartbeat.start()
-        
-
-    def heartBeat(self):
-        while True:
-            time.sleep(1)
-            for serverId in self.alive_servers.keys():
-                count = 0
-                alive = False
-                while count < 3:
-                    try:
-                        alive = (self.alive_servers[serverId].heartBeat() == "OK")
-                        count = 3
-                    except:
-                        count += 1
-                if not alive:
-                    self.dead_servers.put(serverId, rpcHandle)
-                    self.alive_servers.pop(serverId)
-        # if len(self.dead_servers) != 0:
-        #     print("There are " + str(len(self.dead_servers)) + "dead servers.")
-        # return "There are " + str(len(self.alive_servers)) + "alive servers." + "There are " + str(len(self.dead_servers)) + "dead servers."
-
     def put(self, key, value):
-        for serverId, rpcHandle in self.alive_servers.items():
-            rpcHandle.put(key, value)
-        #print('Done')
-        return 'Done-New!'
-    
-    def get_local(self, key):.
-        random_server_id = random.choice(list(self.alive_servers.keys()))
-        value = self.alive_servers[random_server_id].get(key)
-        return value
+        if key not in self.locked_keys:
+            self.locked_keys[key] = Lock()
+        self.locked_keys[key].acquire()
+        with ThreadPoolExecutor(16) as executor:
+            res = []
+            for serverId in self.alive_servers.keys():
+                res.append(executor.submit(self.alive_servers[serverId].put, key, value))
+            concurrent.futures.wait(res, return_when=concurrent.futures.ALL_COMPLETED)
+        self.locked_keys[key].release()
 
+        res_result = []
+        for r in res:
+            res_result.append(str(r.result()))
+        result = "\n".join(res_result)
+        return result
+
+    ## get: This function routes requests from clients to proper
+    ## servers that are responsible for getting the value
+    ## associated with the given key.
     def get(self, key):
-        with concurrent.futures.ThreadPoolExecutor(max_workers = 16) as executor:
-            future = executor.submit(self.get_local, (key))
-            for future in concurrent.futures.as_completed(futures):
-                result = future.result()
-                r = "[Server " + str(random_server_id) + "] Receive a get request: " + "Key = " + str(key) + " Value = " + str(result)
-                return r
+        result = ""
+        if key in self.locked_keys:
+            time.sleep(0.1)
         
+        serverId = key % len(self.alive_servers)
+        return self.alive_servers[serverId].get(key)
 
     ## printKVPairs: This function routes requests to servers
     ## matched with the given serverIds.
     def printKVPairs(self, serverId):
-        '''
-        Please make it printed like below (newline separated).
-        Key1:Val1
-        Key2:Val2
-
-        Key3:Val3
-        '''
-
-        ans = self.alive_servers[serverId].printKVPairs()
-        #print(ans)
-        return ans
-        #return kvsServers[serverId].printKVPairs()
+        count = 0
+        while count < 3:
+            try:
+                resp = self.alive_servers[serverId].printKVPairs()
+                return resp
+            except:
+                resp = "Server {} is dead after retrying 3 times.".format(serverId)
+                count += 1
+        return resp
 
     ## addServer: This function registers a new server with the
     ## serverId to the cluster membership.
     def addServer(self, serverId):
-        self.alive_servers[serverId] = xmlrpc.client.ServerProxy(baseAddr + str(baseServerPort + serverId))
-        return "Success"
+        new_server = xmlrpc.client.ServerProxy(baseAddr + str(baseServerPort + serverId))
+        self.alive_servers[serverId] = new_server
+        return "Copy Failed for {}.".format(serverId)
 
     ## listServer: This function prints out a list of servers that
     ## are currently active/alive inside the cluster.
     def listServer(self):
         serverList = []
-        for serverId, rpcHandle in self.alive_servers.items():
+        for serverId, _ in self.alive_servers.items():
             serverList.append(serverId)
         return serverList
 
@@ -111,8 +92,29 @@ class FrontendRPCServer:
     ## server terminate normally.
     def shutdownServer(self, serverId):
         result = self.alive_servers[serverId].shutdownServer()
-        self.alive_servers.pop(serverId)
+        self.alive_servers.pop(serverId, None)
         return result
+    
+    def hearbeat(self):
+        while True:
+            time.sleep(1)
+            faulty_servers = []
+            for serverId in self.alive_servers.keys():
+                count = 0
+                alive = False
+                while count < 3:
+                    try:
+                        self.alive_servers[serverId].heartBeat()
+                        alive = True
+                        count = 3
+                    except:
+                        count += 1
+                if not alive:
+                    faulty_servers.append(serverId)
+        
+            for id in faulty_servers:
+                self.alive_servers.pop(serverId)
+    
 
 server = SimpleThreadedXMLRPCServer(("localhost", 8001))
 server.register_instance(FrontendRPCServer())
