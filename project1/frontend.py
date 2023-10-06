@@ -55,7 +55,7 @@ class FrontendRPCServer:
         result = ""
         if key in self.locked_keys:
             time.sleep(0.1)
-        
+        # random_server_id = random.choice(list(self.alive_servers.keys()))
         serverId = key % len(self.alive_servers)
         return self.alive_servers[serverId].get(key)
 
@@ -76,8 +76,25 @@ class FrontendRPCServer:
     ## serverId to the cluster membership.
     def addServer(self, serverId):
         new_server = xmlrpc.client.ServerProxy(baseAddr + str(baseServerPort + serverId))
+        server_ids = list(self.alive_servers.keys())
+        if len(server_ids) != 0:
+            random_server_id = random.choice(server_ids)
+        
         self.alive_servers[serverId] = new_server
-        return "Copy Failed for {}.".format(serverId)
+
+        # More servers exists
+        if len(self.alive_servers) > 1:
+            #need to copy kvs from one server to another
+            try:
+                kv_store = self.printKVPairs(random_server_id)
+            except:
+                return "Get K,V pair from " + str(random_server_id) + "failed."
+            try:
+                self.alive_servers[serverId].deep_copy(kv_store)
+            except:
+                return "Deep Copy of K,V pair to " + str(serverId) + "from" + str(random_server_id) + "failed."
+
+        return "Success in creating new server " + str(serverId) + "K,V copied."
 
     ## listServer: This function prints out a list of servers that
     ## are currently active/alive inside the cluster.
@@ -98,7 +115,7 @@ class FrontendRPCServer:
     def hearbeat(self):
         while True:
             time.sleep(1)
-            faulty_servers = []
+            dead_servers = []
             for serverId in self.alive_servers.keys():
                 count = 0
                 alive = False
@@ -110,9 +127,9 @@ class FrontendRPCServer:
                     except:
                         count += 1
                 if not alive:
-                    faulty_servers.append(serverId)
+                    dead_servers.append(serverId)
         
-            for id in faulty_servers:
+            for id in dead_servers:
                 self.alive_servers.pop(serverId)
     
 

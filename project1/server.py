@@ -2,6 +2,8 @@ import argparse
 import xmlrpc.client
 import xmlrpc.server
 import concurrent.futures
+import json
+import copy
 
 serverId = 0
 basePort = 9000
@@ -49,6 +51,14 @@ class KVSRPCServer:
     def heartBeat(self):
         print("[Server " + str(serverId) + "] is running ..")
         return "OK"
+
+    def parse_key_value_string(self, kv_store):
+        return json.loads(kv_store)
+
+    def deep_copy(self, kv_store):
+        self.KVStore = copy.deep_copy(parse_key_value_string(kv_store))
+        return "Deep Copy Success"
+
 
 
 if __name__ == '__main__':
