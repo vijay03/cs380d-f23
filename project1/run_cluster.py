@@ -90,7 +90,11 @@ def loadDataset(thread_id, keys, load_vals, num_threads):
     end_idx = int(start_idx + (int((len(keys) / num_threads))))
 
     for idx in range(start_idx, end_idx):
-        result = clientList[thread_id].put(keys[idx], load_vals[idx])
+        try:
+            result = clientList[thread_id].put(keys[idx], load_vals[idx])
+        except:
+            print("[Error in thread %d] put request fail, key = %d, val = %d" % (thread_id, keys[idx], load_vals[idx]))
+            return
 
 def runWorkload(k8s_client, k8s_apps_client, prefix, thread_id,
                 keys, load_vals, run_vals, num_threads, num_requests,
@@ -110,11 +114,20 @@ def runWorkload(k8s_client, k8s_apps_client, prefix, thread_id,
                 elif remove_server == 1:
                     shutdownServer(k8s_client, k8s_apps_client, 0)
             newval = random.randint(0, 1000000)
-            clientList[thread_id].put(keys[idx], newval)
-            result = clientList[thread_id].get(keys[idx])
-            result = result.split(':')
-            if int(result[0]) != keys[idx] or int(result[1]) != newval:
-                print("[Error] request = (%d, %d), return = (%d, %d)" % (keys[idx], newval, int(result[0]), int(result[1])))
+            try:
+                clientList[thread_id].put(keys[idx], newval)
+            except:
+                print("[Error in thread %d] put request fail, key = %d, val = %d" % (thread_id, keys[idx], newval))
+                return
+
+            try:
+                result = clientList[thread_id].get(keys[idx])
+                result = result.split(':')
+                if int(result[0]) != keys[idx] or int(result[1]) != newval:
+                    print("[Error] request = (%d, %d), return = (%d, %d)" % (keys[idx], newval, int(result[0]), int(result[1])))
+                    return
+            except:
+                print("[Error in thread %d] get request fail, key = %d", keys[idx])
                 return
             request_count += 1
     else:
@@ -131,12 +144,20 @@ def runWorkload(k8s_client, k8s_apps_client, prefix, thread_id,
                 if request_count == num_requests:
                     break
                 if optype[idx % 100] == "Put":
-                    result = clientList[thread_id].put(keys[idx], run_vals[idx])
+                    try:
+                        result = clientList[thread_id].put(keys[idx], run_vals[idx])
+                    except:
+                        print("[Error in thread %d] put request fail, key = %d, val = %d" % (thread_id, keys[idx], run_vals[idx]))
+                        return
                 elif optype[idx % 100] == "Get":
-                    result = clientList[thread_id].get(keys[idx])
-                    result = result.split(':')
-                    if int(result[0]) != keys[idx] or int(result[1]) != load_vals[idx]:
-                        print("[Error] request = (%d, %d), return = (%d, %d)" % (keys[idx], load_vals[idx], int(result[0]), int(result[1])))
+                    try:
+                        result = clientList[thread_id].get(keys[idx])
+                        result = result.split(':')
+                        if int(result[0]) != keys[idx] or int(result[1]) != load_vals[idx]:
+                            print("[Error] request = (%d, %d), return = (%d, %d)" % (keys[idx], load_vals[idx], int(result[0]), int(result[1])))
+                            return
+                    except:
+                        print("[Error in thread %d] get request fail, key = %d", keys[idx])
                         return
                 else:
                     print("[Error] unknown operation type")
