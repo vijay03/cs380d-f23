@@ -1,0 +1,62 @@
+Problems with PBFT
+==================
+- okay for 4--7 replicas, but doesn't scale
+- view-changes are expensive
+- PBFT sends O(n^2) messages and 2 round trips for each new proposal, and O(n^3) for leader replacement
+- HotStuff is meant to scale, reducing message complexity and increasing responsiveness
+
+HotStuff
+========
+- Three-phase core
+- Allows replicas to change their mind after voting
+- Key properties: Linear View Change, and Optimistic Responsiveness
+- Linear View Change: after GST, O(n) for consensus with correct leader, and O(n^2) in worst case
+- Optimistic Responsiveness: Leader just waits for first n-f responses
+- changing leaders in hotStuff is cheap
+- HotStuff runs all communication through the leader, instead of all-to-all
+
+Details
+=======
+- HotStuff uses threshold signatures
+- Client sends request, waits for (f+1) matching responses
+- Three phases similar to PBFT: prepare, pre-commit, commit, requiring (n-f) votes
+- Quorum certificate: proposal + (n-f) votes, replica i, view v
+
+Prepare
+=======
+- NEW-VIEW messages from (n-f) replicas: viewNumber + prepareQC
+- highQC: prepareQC with highest view
+- Leader extends highQC.node with new proposal using CREATE-LEAF
+- New node is sent in a PREPARE message to all replicas
+- If replica accepts PREPARE message, it votes for it using its partial signature
+- When to accept?
+  - New proposal extends lockedQC.node
+  - New proposal has higher view than lockedQC
+
+Pre-commit
+==========
+- On getting (n-f) PREPARE votes, leader combines into prepareQC, broadcasts it
+- A replica getting prepareQC responds with pre-commit vote
+
+Commit
+======
+- On getting (n-f) PRE-COMMIT votes, leader combines into precommitQC, broadcasts it
+- A replica getting precommitQC responds with commit vote
+- Replica's lockedQC = precommitQC
+
+Decide
+======
+- On getting (n-f) COMMIT votes, leader combines into commitQC
+- Leader sends DECIDE message to all replicas
+- On getting DECIDE, replicas considers commitQC proposal to b committed
+- Replica also increments viewNumber and starts the next view
+
+Chained HotStuff
+================
+- Change the view on every PREPARE phase
+- Create a QC and pass it on to the next leader
+- Prepare phase genericQC is sent to the next leader
+- PREPARE phase for view v+1 also serves as PRE-COMMIT for view v
+- New phases: PREPARE, PRE-COMMIT, COMMIT
+
+Good explanation: https://www.youtube.com/watch?v=GAGW-c4hADA
