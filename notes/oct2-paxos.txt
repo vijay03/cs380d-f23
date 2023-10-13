@@ -1,0 +1,7 @@
+Proposer
+========
+- propose (n) to set of acceptors
+- Each acceptor responds back if it hasn't accepted n1 > n at that point (but could do so in the future)
+- if majority of acceptors accept the value, then:
+- send accept (n, v) to all acceptors
+
