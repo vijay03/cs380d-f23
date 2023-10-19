@@ -1,0 +1,131 @@
+PBFT
+====
+
+What is the fault model?
+- asynchronous model
+- f nodes out of N can exhibit byzantine behavior
+- attacker may withhold or delay messages, breaking synchrony assumption (but cannot delay forever)
+- messages are cryptographically signed, so cannot be corrupted
+
+Assumptions about the operations the service can perform?
+- deterministic, but arbitrary
+
+What are the properties provided?
+- safety: operations will be linearizable, does not depend on synchrony
+- liveness: service will make progress and respond to clients, depends on synchrony
+
+What is the synchrony assumption?
+- asynchronous
+
+How many replicas do you need?
+invariants:
+- liveness: Q >= N - f
+- safety: (any two quorums must intersect in more than f nodes, since
+f can be malicious)
+2Q -N > f
+2(N-f) -N > f
+2N -2f -N > f
+N > 3f
+
+to contrast to what happens without byzantine assumptions,
+- liveness: Q >= N - f
+- safety: (any two quorums must intersect in at least 1 node)
+2Q - N > 0
+2(N -f) - N > 0
+2N -2f -N > 0
+N > 2f
+
+What happens if you have more than 3f + 1 replicas?
+- guarantees are the same, but performance degrades
+
+Summary
+- time divided into views
+- in each view, a pre-determined replica is the primary
+- client sends req to primary
+- primary sends to all replicas
+- replicas return result to client
+- client waits for f+1 identical results with same timestamp
+
+safety guarantee: all non- faulty replicas agree on a total order for
+the execution of requests despite failures
+
+Protocol:
+- client to primary: req
+- primary to replicas: pre-prepare: req + seq-num n
+          - why? proof that the request was assigned sequence number
+                    in view v in view changes.
+- replica to other replicas:
+  - prepare: req + seq-num + replica number (need 2f + 1)
+  - commit: req + seq-num + replica num
+                    - need f+1 prepares for committed()
+                    - need prepared() and 2f+1 commits for committed-local()
+                    - committed-local() => committed()
+- replicas to client: unique response + view number + replica number
+
+can we have prepared(m, v, n, i) for two different m?
+No
+
+prepared needs 2f + 1 nodes to have the same prepare messages
+Impossible for two disjoint 2f + 1
+
+Example
+=======
+
+R1 R2 R3 R4
+3f + 1 = 4, for f = 1
+
+Lets say R1 is faulty
+
+R2 is primary
+
+R2 to all: pre-prepare m, v, n
+
+R3, R4 to all: prepare m, v, n
+R1 to all: prepare m, v, n
+           prepare m2, v, n
+
+We need 2f + 1 for prepared(m) to hold (3 replicas needed)
+
+R1, R3, R4 match condition
+
+prepared(m) holds
+
+
+Why pre-prepare phase?
+======================
+
+Normally, we have a prepare phase and commit phase.
+Prepare phase: send out request to replicas, wait to hear back from
+majority
+Commit phase: heard back from majority, tell replicas committed
+
+Why doesn't this work in the presence of byzantine failures?
+f might be part of the majority who reply, might throw away data
+If M - f then fail, a majority of the nodes are still up, but data
+lost
+
+Making this concrete
+Lets say there are 10 nodes, 3 faulty (n = 10, f = 3)
+
+in prepare phase, f = 3 + 3 other nodes respond yes. 6 responses, so
+primary does commit.
+
+Now, 3 non-faulty nodes from the previous step fail. 7 nodes are still
+up (3 are faulty, and have thrown away data). Data is lost even though
+a majority of the nodes are up. So VR doesn't tolerate byzantine
+faults.
+
+==
+
+So how does the pre-prepare phase help?
+
+prepared phase after getting 2f+1 prepare
+
+In the previous example, that is 7 nodes. So even if the 3 faulty
+nodes are up, and 3 correct nodes die, one node will remember that the
+request m was ordered as slot n in view v.
+
+pre-prepare:
+1) on nodes getting pre-prepare, if they accept it, they broadcast
+prepare messages
+2) on getting 2f prepare messages, a node entered prepared phase

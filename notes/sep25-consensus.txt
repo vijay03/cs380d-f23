@@ -1,0 +1,27 @@
+Two generals problem
+====================
+- Two generals need to coordinate to attack a city
+- If either attacks alone, they perish
+- Messages sent from one to another can be intercepted and destroyed
+- No common knowledge: no shared sky or pre-determined time to attack
+- Surprising result: neither general can decide to attack, regardless of how many messages are exchanged!
+
+Common knowledge
+================
+- Lack of common knowledge causes problems in distributed systems
+- Often, its not just about knowing X, but knowing that Y knows X, or that Y knows that you know X
+- The lack of common knowledge results in a large number of messages being sent to establish such common knowledge
+- this is the root of multiple rounds in consensus protocols
+
+Byzantine Generals
+==================
+- N generals need to coordinate together to attack a city, but upto f of them can be traitorous
+- The f traitors can work together
+- Result: You need N > 3f to still coordinate and carry out an attack
+- In other words, if more than a third are traitors, we cannot make progress.
+- Two conditions:
+      - Safety: All honest generals agree to the same thing
+      - Liveness: if an honest general proposes a time, it will eventually be accepted by all other honest generals
+- How do we solve this problem?
+  - We basically dont trust any one node
+  - We broadcast proposals and votes, and if N - f votes are identical, we trust in that  
