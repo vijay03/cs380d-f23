@@ -6,6 +6,7 @@ import time
 import random
 import xmlrpc.client
 
+from threading import Lock
 import concurrent.futures
 
 from shared import util
@@ -98,38 +99,75 @@ def loadDataset(thread_id, keys, load_vals, num_threads):
 
 def runWorkload(k8s_client, k8s_apps_client, prefix, thread_id,
                 keys, load_vals, run_vals, num_threads, num_requests,
-                put_ratio, test_consistency, crash_server, add_server, remove_server):
+                put_ratio, test_consistency, key_range_duplication, per_key_locks,
+                per_key_vals, crash_server, add_server, remove_server):
     request_count = 0
     start_idx = int((len(keys) / num_threads) * thread_id)
     end_idx = int(start_idx + (int((len(keys) / num_threads))))
 
     if test_consistency == 1:
-        while num_requests > request_count:
-            idx = random.randint(start_idx, end_idx - 1)
-            if thread_id == 0 and request_count == int(num_requests / 2):
-                if crash_server == 1:
-                    killServer(k8s_client, k8s_apps_client, 0)
-                elif add_server == 1:
-                    addServer(k8s_client, k8s_apps_client, prefix)
-                elif remove_server == 1:
-                    shutdownServer(k8s_client, k8s_apps_client, 0)
-            newval = random.randint(0, 1000000)
-            try:
-                clientList[thread_id].put(keys[idx], newval)
-            except:
-                print("[Error in thread %d] put request fail, key = %d, val = %d" % (thread_id, keys[idx], newval))
-                return
-
-            try:
-                result = clientList[thread_id].get(keys[idx])
-                result = result.split(':')
-                if int(result[0]) != keys[idx] or int(result[1]) != newval:
-                    print("[Error] request = (%d, %d), return = (%d, %d)" % (keys[idx], newval, int(result[0]), int(result[1])))
+        if key_range_duplication == 0:
+            while num_requests > request_count:
+                idx = random.randint(start_idx, end_idx - 1)
+                if thread_id == 0 and request_count == int(num_requests / 2):
+                    if crash_server == 1:
+                        killServer(k8s_client, k8s_apps_client, 0)
+                    elif add_server == 1:
+                        addServer(k8s_client, k8s_apps_client, prefix)
+                    elif remove_server == 1:
+                        shutdownServer(k8s_client, k8s_apps_client, 0)
+                newval = random.randint(0, 1000000)
+                try:
+                    clientList[thread_id].put(keys[idx], newval)
+                except:
+                    print("[Error in thread %d] put request fail, key = %d, val = %d" % (thread_id, keys[idx], newval))
                     return
-            except:
-                print("[Error in thread %d] get request fail, key = %d", keys[idx])
-                return
-            request_count += 1
+
+                try:
+                    result = clientList[thread_id].get(keys[idx])
+                    result = result.split(':')
+                    if int(result[0]) != keys[idx] or int(result[1]) != newval:
+                        print("[Error] request = (%d, %d), return = (%d, %d)" % (keys[idx], newval, int(result[0]), int(result[1])))
+                        return
+                except:
+                    print("[Error in thread %d] get request fail, key = %d" % (thread_id, keys[idx]))
+                    return
+                request_count += 1
+                if thread_id == 0:
+                    print("Request count = " + str(request_count))
+        else:
+            while num_requests > request_count:
+                idx = random.randint(0, key_range_duplication - 1)
+                if thread_id == 0 and request_count == int(num_requests / 2):
+                    if crash_server == 1:
+                        killServer(k8s_client, k8s_apps_client, 0)
+                    elif add_server == 1:
+                        addServer(k8s_client, k8s_apps_client, prefix)
+                    elif remove_server == 1:
+                        shutdownServer(k8s_client, k8s_apps_client, 0)
+                try:
+                    per_key_locks[idx].acquire()
+                    newval = per_key_vals[idx]
+                    per_key_vals[idx] += 1
+                    clientList[thread_id].put(keys[idx], newval)
+                    per_key_locks[idx].release()
+                except:
+                    print("[Error in thread %d] put request fail, key = %d, val = %d" % (thread_id, keys[idx], newval))
+                    return
+
+                try:
+                    result = clientList[thread_id].get(keys[idx])
+                    result = result.split(':')
+                    if int(result[0]) != keys[idx] or int(result[1]) < newval:
+                        print("[Error] request = (%d, %d), return = (%d, %d)" % (keys[idx], newval, int(result[0]), int(result[1])))
+                        return
+                except:
+                    print("[Error in thread %d] get request fail, key = %d" % (thread_id, keys[idx]))
+                    return
+                request_count += 1
+                if thread_id == 0:
+                    print("Request count = " + str(request_count))
+
     else:
         optype = []
         for i in range(0, 100):
@@ -157,7 +195,7 @@ def runWorkload(k8s_client, k8s_apps_client, prefix, thread_id,
                             print("[Error] request = (%d, %d), return = (%d, %d)" % (keys[idx], load_vals[idx], int(result[0]), int(result[1])))
                             return
                     except:
-                        print("[Error in thread %d] get request fail, key = %d", keys[idx])
+                        print("[Error in thread %d] get request fail, key = %d" % (thread_id, keys[idx]))
                         return
                 else:
                     print("[Error] unknown operation type")
@@ -165,8 +203,8 @@ def runWorkload(k8s_client, k8s_apps_client, prefix, thread_id,
                 request_count += 1
 
 def testKVS(k8s_client, k8s_apps_client, prefix, num_keys, num_threads,
-            num_requests, put_ratio, test_consistency=0, crash_server=0,
-            add_server=0, remove_server=0):
+            num_requests, put_ratio, test_consistency=0, key_range_duplication=0,
+            crash_server=0, add_server=0, remove_server=0):
     serverList = frontend.listServer()
     serverList = serverList.split(',')
     if len(serverList) < 1:
@@ -182,6 +220,13 @@ def testKVS(k8s_client, k8s_apps_client, prefix, num_keys, num_threads,
     keys = list(range(0, num_keys))
     load_vals = list(range(0, num_keys))
     run_vals = list(range(num_keys, num_keys * 2))
+
+    per_key_locks = []
+    per_key_vals = []
+    if key_range_duplication != 0:
+        for i in range(0, num_keys):
+            per_key_locks.append(Lock())
+            per_key_vals.append(0)
 
     random.shuffle(keys);
     random.shuffle(load_vals);
@@ -201,7 +246,8 @@ def testKVS(k8s_client, k8s_apps_client, prefix, num_keys, num_threads,
         pool.submit(runWorkload, k8s_client, k8s_apps_client, prefix,
                     thread_id, keys, load_vals, run_vals,
                     num_threads, int(num_requests / num_threads), put_ratio,
-                    test_consistency, crash_server, add_server, remove_server)
+                    test_consistency, key_range_duplication, per_key_locks,
+                    per_key_vals, crash_server, add_server, remove_server)
     pool.shutdown(wait=True)
     end = time.time()
     print("Run throughput = " + str(round(num_requests/(end - start), 1)) + "ops/sec")
@@ -256,12 +302,13 @@ def event_trigger(k8s_client, k8s_apps_client, prefix):
             num_requests = int(args[3])
             put_ratio = int(args[4])
             test_consistency = int(args[5])
-            crash_server = int(args[6])
-            add_server = int(args[7])
-            remove_server = int(args[8])
+            key_range_duplication = int(args[6])
+            crash_server = int(args[7])
+            add_server = int(args[8])
+            remove_server = int(args[9])
             testKVS(k8s_client, k8s_apps_client, prefix, num_keys, num_threads,
-                    num_requests, put_ratio, test_consistency, crash_server,
-                    add_server, remove_server)
+                    num_requests, put_ratio, test_consistency, key_range_duplication,
+                    crash_server, add_server, remove_server)
         elif args[0] == 'terminate':
             terminate = True
         else:
